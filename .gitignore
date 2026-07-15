@@ -1,0 +1,38 @@
+# Secrets — never commit
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+
+# PyInstaller build artifacts
+build/
+dist/chemtech-backend/
+
+# Electron / Node
+node_modules/
+release/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Databases — real files with live data; commit only the sanitized seed
+users.db
+users_backup.db
+db.sqlite
+# users.db.seed is intentionally NOT ignored — it is the safe, anonymised seed
+
+# Report / documentation artifacts (generated; not needed in source repo)
+*.docx
+*.pdf
+
+# Temp / dev-only helper scripts (not part of the application)
+inspect_db.py
+verify_seed.py
+sanitize_db.py
+.temp_target.txt

@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChemTech | Molecular Innovation</title>
+    <meta name="description" content="ChemTech — Pioneering chemical engineering at the molecular level.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="analytics.css?v=2">
+    <link rel="stylesheet" href="enhancements.css?v=1">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <!-- ====== Dark Login Screen ====== -->
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="login-logo" style="display: flex; justify-content: center; width: 100%; margin-bottom: 8px;">
+                <img src="logo/logo.png" alt="ChemTech Logo" style="height: 180px; max-width: 100%; object-fit: contain;">
+            </div>
+            <p class="login-subtitle">Secure Authentication Portal</p>
+            <div class="role-selector" id="role-selector" style="margin-bottom: 24px;">
+                <button class="role-pill active" id="role-pill-user" data-role="user">User</button>
+                <button class="role-pill" id="role-pill-regional" data-role="regional_admin">Regional Admin</button>
+                <button class="role-pill" id="role-pill-admin" data-role="admin">Admin</button>
+            </div>
+            <p class="role-hint" id="role-hint" style="margin-top:-16px; margin-bottom:16px;">Sign in as a standard user</p>
+            <div class="login-tabs">
+                <button class="login-tab active" id="tab-btn-google" data-tab="google">Google</button>
+                <button class="login-tab" id="tab-btn-manual" data-tab="manual">Manual</button>
+            </div>
+            <div class="login-tab-content active" id="login-google-tab">
+                <div id="g_id_onload" data-client_id="755862364483-6aj553i09t3mich40gidrnaamso5fjbr.apps.googleusercontent.com"
+                    data-context="signin" data-ux_mode="popup" data-callback="handleGoogleLogin" data-auto_prompt="false"></div>
+                <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+                    data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+            </div>
+            <div class="login-tab-content" id="login-manual-tab">
+                <form id="manual-login-form" class="manual-form">
+                    <div class="input-field">
+                        <input type="text" id="login-username" placeholder="Username" required autocomplete="off">
+                    </div>
+                    <div class="input-field">
+                        <input type="password" id="login-password" placeholder="Password" required>
+                    </div>
+                    <p class="login-error" id="login-error"></p>
+                    <button type="submit" class="login-btn primary">Sign In</button>
+                    <button type="button" class="login-btn secondary" id="register-btn">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== Pending Approval Screen ====== -->
+    <div id="pending-screen" class="hidden">
+        <div class="pending-box">
+            <div class="pending-icon">⏳</div>
+            <h2>Access Pending</h2>
+            <p>Your account has been registered and is awaiting admin approval.</p>
+            <button id="pending-back-btn">Return to Login</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Cursors -->
+    <div id="cursor"></div>
+    <div id="cursor-ring"></div>
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="l-logo-anim"><img src="logo/logo.png" alt="ChemTech Logo" style="height: 160px; max-width: 100%; object-fit: contain;"></div>
+        <div class="l-rings">
+            <div class="l-ring"></div>
+            <div class="l-ring r2"></div>
+        </div>
+        <div class="l-pct"><span id="load-pct">0</span><span class="l-sym">%</span></div>
+    </div>
+
+    <!-- Full-bleed frame animation -->
+    <canvas id="hero-canvas"></canvas>
+    <div id="vignette"></div>
+    <canvas id="fx-canvas"></canvas>
+    <div id="webgl-canvas"></div>
+
+    <!-- HUD -->
+    <div class="hud-corner hud-tl"></div>
+    <div class="hud-corner hud-tr"></div>
+    <div class="hud-corner hud-bl"></div>
+    <div class="hud-corner hud-br"></div>
+    <div id="scan-line"></div>
+    <div id="side-ticker">
+        <div class="ticker-dot active" id="dot-0"></div>
+        <div class="ticker-dot" id="dot-1"></div>
+        <div class="ticker-dot" id="dot-2"></div>
+        <div class="ticker-dot" id="dot-3"></div>
+    </div>
+    <div id="hud-bar">
+        <span class="hud-text" id="hud-frame">FRAME 001</span>
+        <div class="hud-line"></div>
+        <span class="hud-text" id="hud-coords">X:000 Y:000</span>
+    </div>
+
+    <!-- AI engine: top-right on home hero only (visibility controlled in main.js) -->
+    <div id="llm-floating-toggle" aria-label="AI engine selection">
+        <div class="llm-float-inner">
+            <span class="llm-float-title">AI engine</span>
+            <div class="llm-pill-wrap">
+                <button type="button" class="llm-pill active" id="llm-pill-groq" data-llm="groq">Groq</button>
+                <button type="button" class="llm-pill" id="llm-pill-local" data-llm="local">Ollama</button>
+            </div>
+            <p class="llm-float-hint" id="llm-selector-hint">Cloud when available; falls back to local if the API fails.</p>
+            <!-- User Groq API Key Section -->
+            <div class="user-api-section" id="user-api-section">
+                <div class="api-key-header">
+                    <span class="api-key-label">Your Groq API Key</span>
+                    <label class="api-toggle-switch" title="Use your own key">
+                        <input type="checkbox" id="use-own-key-toggle">
+                        <span class="api-toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="api-key-input-wrap" id="api-key-input-wrap">
+                    <input type="password" id="user-groq-key-input" class="api-key-input" placeholder="gsk_..." autocomplete="off" spellcheck="false">
+                    <button id="save-groq-key-btn" class="api-key-save-btn" type="button">Save</button>
+                    <button id="delete-groq-key-btn" class="api-key-delete-btn hidden" type="button" title="Remove key">✕</button>
+                </div>
+                <p class="api-key-status" id="api-key-status"></p>
+            </div>
+            <!-- Notification Bell -->
+            <button id="notif-bell-btn" class="notif-bell-btn hidden" title="Notifications" onclick="toggleNotifPanel()" style="margin-top:10px;align-self:center;">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                </svg>
+                <span id="notif-badge" class="notif-badge hidden">0</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Frosted glass sidebar panel -->
+    <aside id="panel" class="offscreen">
+        <div class="panel-top">
+            <div class="logo">
+                <img src="logo/logo.png" alt="ChemTech Logo" style="height: 240px; max-width: 130%; object-fit: contain; object-position: left center; margin: -50px -50px -50px -10px;">
+            </div>
+            <nav>
+                <a href="#chemicals" id="nav-chemicals" class="hidden"><span class="nav-num">01</span>Chemicals</a>
+                <a href="#deliveries" id="nav-deliveries" class="hidden"><span class="nav-num">02</span>My Deliveries</a>
+                <a href="#ai-mode" id="ai-btn"><span class="nav-num">03</span>AI System</a>
+                <a href="#analytics" id="nav-analytics" class="hidden"><span class="nav-num">04</span>AI Analytics</a>
+                <a href="#dashboard" id="nav-dashboard" class="hidden"><span class="nav-num">05</span>Regional Dashboard</a>
+                <a href="#admin" id="admin-panel-btn" class="hidden"><span class="nav-num">06</span>Admin Panel</a>
+                <a href="#logout" id="logout-btn" style="margin-top:16px;opacity:0.6;"><span class="nav-num" id="logout-num">07</span>Logout System</a>
+            </nav>
+        </div>
+
+        <div class="panel-mid" id="hero-panel">
+            <div class="eyebrow" id="hero-eyebrow">Molecular Innovation</div>
+            <h1 id="hero-title">Engineered<br><strong>at the<br>molecular<br>level.</strong></h1>
+            <p id="hero-desc">We develop high-performance chemical compounds that drive progress across energy, life sciences, and advanced materials.</p>
+        </div>
+
+        <div class="panel-bot">
+            <div class="divider"></div>
+            <div class="compound-row">
+                <span class="compound-label">Active Compound</span>
+                <span class="compound-formula" id="formula">H<sub>2</sub>O</span>
+            </div>
+            <div class="stats-row">
+                <div class="stat">
+                    <span class="stat-num">500<sup>+</sup></span>
+                    <span class="stat-key">Patents</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-num">47</span>
+                    <span class="stat-key">Countries</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-num" id="live-time">—</span>
+                    <span class="stat-key">UTC</span>
+                </div>
+            </div>
+
+            <div class="profile-chip hidden" id="profile-chip">
+                <img class="profile-avatar" id="profile-avatar" src="" alt="Profile photo">
+                <div class="profile-info">
+                    <span class="profile-name" id="profile-name">—</span>
+                    <span class="profile-badge" id="profile-badge">USER</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- AI Chatbot Interface -->
+    <div id="ai-interface" class="hidden">
+        <button id="ai-back-btn">
+            <span class="arr" style="transform:rotate(180deg);margin-right:8px;">→</span>
+            Return to Base
+        </button>
+        <div class="chat-container">
+            <div class="chat-header">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <img src="logo/logo.png" alt="ChemTech Logo" style="height: 70px; object-fit: contain;">
+                        <h3 style="margin: 0; font-size:26px;">AI Assistant</h3>
+                    </div>
+                    <p>Full database access · Live inventory · Sales analytics</p>
+                </div>
+                <button id="stop-audio" title="Stop Audio" style="display:none;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="chat-history" id="chat-history">
+                <div class="msg bot">Hello. I am the ChemTech intelligence module. I have full access to your live database — inventory, sales, deliveries, feedback, and user data. Ask me anything about your operations.</div>
+            </div>
+            <div class="chat-suggestions analytics-suggestions" id="chat-suggestions">
+                <span class="sugg-label">Try:</span>
+                <button type="button" class="sugg-chip chat-sugg-chip" data-q="How many kg of chemicals have we sold in total?">Total sold</button>
+                <button type="button" class="sugg-chip chat-sugg-chip" data-q="What is our best-selling chemical and how much revenue did it generate?">Top seller</button>
+                <button type="button" class="sugg-chip chat-sugg-chip" data-q="Which chemicals are low on stock right now?">Low stock</button>
+                <button type="button" class="sugg-chip chat-sugg-chip" data-q="Compare revenue across all four provinces">Province compare</button>
+                <button type="button" class="sugg-chip chat-sugg-chip" data-q="What is the average customer sentiment score?">Sentiment</button>
+            </div>
+            <form id="chat-form">
+                <input type="text" id="chat-input" placeholder="Ask about chemicals, sales, deliveries, stock levels..." required autocomplete="off">
+                <button type="button" id="voice-btn" title="Voice Search">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                    </svg>
+                </button>
+                <button type="submit" id="chat-submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ====== Chemicals Panel ====== -->
+    <div id="chemicals-panel" class="full-panel">
+        <div class="fp-header">
+            <button class="fp-back-btn" id="chemicals-back-btn">← Back</button>
+            <h2>Chemical Catalog</h2>
+            <div class="province-tabs" id="chem-province-tabs">
+                <button class="prov-tab active" data-prov="all">All</button>
+                <button class="prov-tab" data-prov="Punjab">Punjab</button>
+                <button class="prov-tab" data-prov="KPK">KPK</button>
+                <button class="prov-tab" data-prov="Sindh">Sindh</button>
+                <button class="prov-tab" data-prov="Balochistan">Balochistan</button>
+            </div>
+        </div>
+        <div class="fp-content">
+            <div class="chem-search-wrap">
+                <div class="chem-search-icon">⬡</div>
+                <input type="text" id="chem-search-input" class="chem-search-input" placeholder="Search by name, formula, category, province…" autocomplete="off">
+                <button id="chem-search-clear" class="chem-search-clear hidden">✕</button>
+            </div>
+            <div id="chemicals-grid" class="chemicals-grid">
+                <div class="fp-loading">Loading chemical catalog...</div>
+            </div>
+        </div>
+        <!-- Order Modal -->
+        <div id="order-modal" class="modal-overlay hidden">
+            <div class="modal-box">
+                <h3 id="order-modal-title">Order Chemical</h3>
+                <p id="order-modal-info" style="opacity:0.6;font-size:13px;margin-bottom:16px;"></p>
+                <div class="input-field">
+                    <input type="number" id="order-qty" placeholder="Quantity (kg)" min="0.1" step="0.1">
+                </div>
+                <div class="input-field">
+                    <input type="text" id="order-notes" placeholder="Notes (optional)">
+                </div>
+                <div id="assign-user-section" class="assign-user-section hidden">
+                    <div class="assign-user-label">
+                        <span class="assign-icon">👤</span>
+                        <span>Assign delivery to user</span>
+                    </div>
+                    <select id="assign-user-select" class="assign-user-select">
+                        <option value="">Loading users…</option>
+                    </select>
+                </div>
+                <div id="order-location-section" class="assign-user-section hidden" style="margin-top:8px;">
+                    <div class="assign-user-label">
+                        <span class="assign-icon">📍</span>
+                        <span>Set delivery location</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <button class="loc-btn" onclick="openLocationPickerForOrder()" style="padding:6px 10px;">Pick on Map</button>
+                        <span id="order-location-display" style="font-family:var(--mono);font-size:11px;color:var(--accent);">No location pinned yet</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:16px;">
+                    <button class="admin-btn approve" id="order-confirm-btn">Place Order</button>
+                    <button class="admin-btn deny" id="order-cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== Delivery Tracker Panel ====== -->
+    <div id="delivery-panel" class="full-panel">
+        <div class="fp-header">
+            <button class="fp-back-btn" id="delivery-back-btn">← Back</button>
+            <h2>Delivery Tracker</h2>
+        </div>
+        <div class="fp-content">
+            <div id="deliveries-list" class="deliveries-list">
+                <div class="fp-loading">Loading deliveries...</div>
+            </div>
+        </div>
+        <!-- Feedback Modal -->
+        <div id="feedback-modal" class="modal-overlay hidden">
+            <div class="modal-box feedback-box">
+                <h3>Delivery Feedback</h3>
+                <p style="opacity:0.6;font-size:13px;margin-bottom:16px;">Share your experience with this delivery</p>
+                <input type="hidden" id="feedback-delivery-id">
+                <div class="input-field">
+                    <textarea id="feedback-text" placeholder="Describe your delivery experience..." rows="4"></textarea>
+                </div>
+                <div class="voice-feedback-row">
+                    <button id="feedback-voice-btn" class="voice-record-btn">
+                        🎙 Record Voice
+                    </button>
+                    <span id="feedback-voice-status" style="opacity:0.5;font-size:12px;"></span>
+                </div>
+                <div id="feedback-sentiment-result" class="sentiment-result hidden"></div>
+                <div style="display:flex;gap:10px;margin-top:16px;">
+                    <button class="admin-btn approve" id="feedback-submit-btn">Submit Feedback</button>
+                    <button class="admin-btn deny" id="feedback-cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== Regional Admin Dashboard ====== -->
+    <div id="dashboard-panel" class="full-panel">
+        <div class="fp-header">
+            <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
+                <button class="fp-back-btn" id="dashboard-back-btn">← Back</button>
+                <button class="dash-close-btn" onclick="closePanel()" style="background:none;border:none;color:var(--text);font-size:24px;cursor:pointer;opacity:0.6;transition:0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">✕</button>
+            </div>
+            <h2 style="margin-top:0;">Regional Dashboard</h2>
+            <div class="province-tabs" id="dash-province-tabs">
+                <button class="prov-tab active" data-prov="all">Overview</button>
+                <button class="prov-tab" data-prov="Punjab">Punjab</button>
+                <button class="prov-tab" data-prov="KPK">KPK</button>
+                <button class="prov-tab" data-prov="Sindh">Sindh</button>
+                <button class="prov-tab" data-prov="Balochistan">Balochistan</button>
+            </div>
+        </div>
+        <div class="fp-content">
+            <!-- Regional summary cards -->
+            <div id="dashboard-cards" class="dashboard-cards"></div>
+
+            <!-- Chemical Inventory Section -->
+            <div class="dash-section">
+                <div class="dash-section-header">
+                    <span class="dash-section-title">Chemical Inventory</span>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <button class="admin-btn approve" id="add-chem-btn" style="display:none;">+ Add Chemical</button>
+                        <button class="dash-detail-btn" id="chem-detail-btn" onclick="toggleDashSection('chemicals')">View Details →</button>
+                        <button class="dash-back-btn" id="chem-back-btn" onclick="toggleDashSection('chemicals')" style="display:none;">← Summary</button>
+                    </div>
+                </div>
+                <div id="dash-chemicals-chart" class="dash-section-chart-wrap">
+                    <div class="fp-loading">Loading...</div>
+                </div>
+                <div id="dash-chemicals-table" class="dash-table-wrap dash-section-detail-wrap">
+                    <div class="fp-loading">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Delivery Management Section -->
+            <div class="dash-section">
+                <div class="dash-section-header">
+                    <span class="dash-section-title">Delivery Management</span>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <button class="dash-detail-btn" id="del-detail-btn" onclick="toggleDashSection('deliveries')">View Details →</button>
+                        <button class="dash-back-btn" id="del-back-btn" onclick="toggleDashSection('deliveries')" style="display:none;">← Summary</button>
+                    </div>
+                </div>
+                <div id="dash-deliveries-chart" class="dash-section-chart-wrap">
+                    <div class="fp-loading">Loading...</div>
+                </div>
+                <!-- Interactive Delivery Map -->
+                <div id="dash-deliveries-map" class="dash-section-chart-wrap" style="height:300px; display:none; margin-top:16px; border-radius:12px; overflow:hidden;"></div>
+                <div id="dash-deliveries-table" class="dash-table-wrap dash-section-detail-wrap">
+                    <div class="fp-loading">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Feedback & Sentiment Section -->
+            <div class="dash-section">
+                <div class="dash-section-header">
+                    <span class="dash-section-title">Feedback &amp; Sentiment</span>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <button class="dash-detail-btn" id="fb-detail-btn" onclick="toggleDashSection('feedback')">View Details →</button>
+                        <button class="dash-back-btn" id="fb-back-btn" onclick="toggleDashSection('feedback')" style="display:none;">← Summary</button>
+                    </div>
+                </div>
+                <div id="dash-feedback-chart" class="dash-section-chart-wrap">
+                    <div class="fp-loading">Loading...</div>
+                </div>
+                <div id="dash-feedback-list" class="dash-feedback-list dash-section-detail-wrap">
+                    <div class="fp-loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Chemical Modal -->
+        <div id="add-chem-modal" class="modal-overlay hidden">
+            <div class="modal-box">
+                <h3>Add Chemical</h3>
+                <div class="add-chem-form" id="add-chem-form">
+                    <div class="form-row">
+                        <div class="input-field"><input type="text" id="ac-name" placeholder="Chemical Name *" required></div>
+                        <div class="input-field"><input type="text" id="ac-formula" placeholder="Formula (e.g. H2SO4)"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-field">
+                            <select id="ac-province">
+                                <option value="">Select Province *</option>
+                                <option value="Punjab">Punjab</option>
+                                <option value="KPK">KPK</option>
+                                <option value="Sindh">Sindh</option>
+                                <option value="Balochistan">Balochistan</option>
+                            </select>
+                        </div>
+                        <div class="input-field">
+                            <select id="ac-category">
+                                <option value="General">General</option>
+                                <option value="Acids">Acids</option>
+                                <option value="Bases">Bases</option>
+                                <option value="Solvents">Solvents</option>
+                                <option value="Oxidizers">Oxidizers</option>
+                                <option value="Minerals">Minerals</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-field"><input type="number" id="ac-amount" placeholder="Amount (kg)" min="0" step="0.1"></div>
+                        <div class="input-field"><input type="number" id="ac-concentration" placeholder="Concentration (%)" min="0" max="100" step="0.1" value="100"></div>
+                    </div>
+                    <div class="input-field"><input type="number" id="ac-price" placeholder="Price per kg (PKR)" min="0" step="0.01"></div>
+                    <div class="input-field"><textarea id="ac-description" placeholder="Description" rows="2"></textarea></div>
+                    <div style="display:flex;gap:10px;margin-top:16px;">
+                        <button class="admin-btn approve" id="ac-submit-btn">Add Chemical</button>
+                        <button class="admin-btn deny" id="ac-cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== AI Analytics Panel ====== -->
+    <div id="analytics-panel" class="full-panel">
+        <div class="fp-header" style="flex-direction:column;align-items:stretch;gap:16px;padding-bottom:0;">
+            <div style="display:flex;align-items:center;gap:20px;">
+                <button class="fp-back-btn" id="analytics-back-btn">← Back</button>
+                <div>
+                    <h2 style="margin:0;">AI Analytics Engine</h2>
+                    <p style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;opacity:.7;margin-top:3px;">ASK ANYTHING · LIVE DATABASE · VISUAL INSIGHTS</p>
+                </div>
+                <button id="analytics-home-btn" style="margin-left:auto;background:rgba(0,230,195,0.06);border:1px solid rgba(0,230,195,0.2);color:var(--accent);font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:10px 18px;border-radius:8px;cursor:none;transition:all .3s;">◈ Dashboard</button>
+            </div>
+            <div class="an-search-bar" id="an-search-bar">
+                <div class="an-search-icon">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <input type="text" id="analytics-input" class="an-search-input" placeholder="Ask anything… How are we vs competitors? Which chemical is underperforming? Forecast next quarter…" autocomplete="off">
+                <button id="analytics-submit-btn" class="an-search-btn">
+                    <span id="analytics-btn-text">Analyse</span>
+                    <span id="analytics-btn-loader" class="hidden">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    </span>
+                </button>
+            </div>
+            <div class="an-snapshot-bar" id="an-snapshot-bar">
+                <span class="sugg-label">Data focus:</span>
+                <button type="button" class="snapshot-chip active" data-snapshot="" title="Balanced summary across sales, inventory, deliveries, and sentiment">Overview</button>
+                <button type="button" class="snapshot-chip" data-snapshot="sales_ledger" title="Individual sale transactions with dates">Sales ledger</button>
+                <button type="button" class="snapshot-chip" data-snapshot="inventory_full" title="Full chemical catalog with stock and pricing">Full inventory</button>
+                <button type="button" class="snapshot-chip" data-snapshot="deliveries_ops" title="Deliveries with GPS, tracking, and notes">Deliveries &amp; GPS</button>
+                <button type="button" class="snapshot-chip" data-snapshot="feedback_reviews" title="Customer reviews and AI sentiment">Feedback</button>
+                <button type="button" class="snapshot-chip" data-snapshot="users_directory" title="User accounts and roles">Users</button>
+                <button type="button" class="snapshot-chip" data-snapshot="notifications_log" title="In-app alerts and notifications">Notifications</button>
+                <span class="an-snapshot-hint" id="an-snapshot-hint">Balanced context · pick one deep snapshot to save tokens</span>
+            </div>
+            <div class="analytics-suggestions" style="padding:0 0 16px;border:none;">
+                <span class="sugg-label">Try:</span>
+                <button class="sugg-chip" data-q="How many kg of chemicals have we sold in total?">Total Sold</button>
+                <button class="sugg-chip" data-q="How are we performing compared to our competitors in the Pakistani chemical market?">vs Competitors</button>
+                <button class="sugg-chip" data-q="Which chemicals are underperforming and why? Give actionable recommendations.">Underperformers</button>
+                <button class="sugg-chip" data-q="What is our revenue growth trend and forecast for next quarter?">Growth Forecast</button>
+                <button class="sugg-chip" data-q="Show a full breakdown of all 4 provinces — revenue, volume, sentiment and delivery performance">Province Breakdown</button>
+                <button class="sugg-chip" data-q="What is our best-selling chemical and which province drives the most profit?">Top Performers</button>
+                <button class="sugg-chip" data-q="Analyse customer satisfaction and sentiment across all deliveries">Satisfaction Report</button>
+            </div>
+        </div>
+        <div class="fp-content analytics-content" id="analytics-thread" style="gap:12px;padding:0;max-width:1400px;margin:0 auto;width:100%;">
+            <div id="analytics-landing" class="an-landing" style="padding: 24px 0;">
+                <div class="an-landing-icon" style="margin-bottom:12px;">◈</div>
+                <h3 class="an-landing-title" style="margin-bottom:8px;">What would you like to know?</h3>
+                <p class="an-landing-sub" style="margin-bottom:24px;max-width:600px;">Ask any business question in plain English. <strong>Groq</strong> returns a full executive report with KPIs, findings, and charts. <strong>Ollama</strong> (local) gives concise answers with data tables — switch engines using the pill on the home screen.</p>
+                <div class="an-landing-examples" style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 1000px; margin: 0 auto; margin-top: 30px;">
+                    <div class="an-eg-card" onclick="anAskQuery('How are we doing vs competitors in the Pakistani chemical market?')">
+                        <span class="an-eg-icon">📊</span><span class="an-eg-text">Competitive benchmarking vs industry</span>
+                    </div>
+                    <div class="an-eg-card" onclick="anAskQuery('Which province should we expand into next and why?')">
+                        <span class="an-eg-icon">🗺️</span><span class="an-eg-text">Provincial expansion strategy</span>
+                    </div>
+                    <div class="an-eg-card" onclick="anAskQuery('Show me our full revenue performance with monthly trends and top chemicals')">
+                        <span class="an-eg-icon">💰</span><span class="an-eg-text">Full revenue performance report</span>
+                    </div>
+                    <div class="an-eg-card" onclick="anAskQuery('What chemicals should we stock more of and which should we discontinue?')">
+                        <span class="an-eg-icon">🧪</span><span class="an-eg-text">Inventory optimisation advice</span>
+                    </div>
+                </div>
+            </div>
+            <div id="analytics-results" class="an-results hidden"></div>
+        </div>
+        <!-- FULL WIDTH IMMERSIVE DASHBOARD -->
+        <div id="analytics-full-dashboard" class="parallax-dashboard hidden"></div>
+    </div>
+
+
+    <!-- ====== Admin Panel Modal ====== -->
+    <div id="admin-modal" class="hidden">
+        <div class="admin-modal-overlay" id="admin-modal-overlay"></div>
+        <div class="admin-modal-box">
+            <div class="admin-modal-header">
+                <div>
+                    <h2 class="admin-modal-title">Admin Panel</h2>
+                    <p class="admin-modal-sub">Manage users, roles and access</p>
+                </div>
+                <button class="admin-modal-close" id="admin-modal-close" title="Close">✕</button>
+            </div>
+            <div class="admin-tabs">
+                <button class="admin-tab active" id="admin-tab-users" data-tab="tab-users">Users</button>
+                <button class="admin-tab" id="admin-tab-admins" data-tab="tab-admins">Admins</button>
+            </div>
+            <div class="admin-tab-content active" id="tab-users">
+                <div class="admin-section">
+                    <div class="admin-section-label">
+                        <span>Pending Approvals</span>
+                        <span class="admin-badge-count" id="pending-user-count">0</span>
+                    </div>
+                    <div id="pending-user-list" class="admin-list">
+                        <div class="admin-empty">No pending approvals</div>
+                    </div>
+                </div>
+                <div class="admin-section" style="margin-top:24px;">
+                    <div class="admin-section-label"><span>Add User</span></div>
+                    <form id="add-user-form" class="add-user-form">
+                        <input type="text" id="add-user-username" placeholder="Username" required autocomplete="off">
+                        <input type="password" id="add-user-password" placeholder="Password" required>
+                        <select id="add-user-role" class="add-user-role-select">
+                            <option value="user">User</option>
+                            <option value="regional_admin">Regional Admin</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button type="submit" class="admin-btn approve">Add</button>
+                    </form>
+                </div>
+                <div class="admin-section" style="margin-top:24px;">
+                    <div class="admin-section-label"><span>All Users</span></div>
+                    <div id="all-users-list" class="admin-list">
+                        <div class="admin-empty">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-tab-content" id="tab-admins">
+                <div class="admin-section">
+                    <div class="admin-section-label">
+                        <span>Pending Admin Requests</span>
+                        <span class="admin-badge-count" id="pending-count">0</span>
+                    </div>
+                    <div id="pending-list" class="admin-list">
+                        <div class="admin-empty">No pending requests</div>
+                    </div>
+                </div>
+                <div class="admin-section" style="margin-top:32px;">
+                    <div class="admin-section-label"><span>Current Admins</span></div>
+                    <div id="admins-list" class="admin-list">
+                        <div class="admin-empty">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== Region Selector Overlay ====== -->
+    <div id="region-select-overlay" class="region-select-overlay hidden">
+        <div class="region-select-box">
+            <div class="region-select-eyebrow">Regional Dashboard</div>
+            <h2 class="region-select-title">Select Region</h2>
+            <div class="region-buttons-grid">
+                <button class="region-btn region-btn--full" onclick="selectRegion('all','overall',192)">Overall</button>
+                <button class="region-btn" onclick="selectRegion('Punjab','punjab',192)">Punjab</button>
+                <button class="region-btn" onclick="selectRegion('KPK','KPK',154)">KPK</button>
+                <button class="region-btn" onclick="selectRegion('Sindh','sindh',192)">Sindh</button>
+                <button class="region-btn" onclick="selectRegion('Balochistan','balochistan',192)">Balochistan</button>
+            </div>
+            <button class="region-back-btn" onclick="handleRegionSelectBack()">← Back to Home</button>
+        </div>
+    </div>
+
+    <!-- ====== Share Location Modal ====== -->
+    <div id="share-location-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeShareLocationModal()">
+        <div class="modal-box slm-box">
+            <button class="slm-close-btn" onclick="closeShareLocationModal()" title="Close">✕</button>
+            <div class="slm-header">
+                <div class="slm-icon">📤</div>
+                <h3 class="slm-title">Share Delivery Location</h3>
+                <p class="slm-subtitle">
+                    <span id="slm-location-name"></span>
+                    <span class="slm-tracking-code" id="slm-tracking"></span>
+                </p>
+            </div>
+            <!-- Share options grid -->
+            <div class="slm-options-grid">
+                <button class="slm-option-btn slm-whatsapp" id="slm-whatsapp-btn">
+                    <span class="slm-opt-icon">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                    </span>
+                    <span class="slm-opt-label">WhatsApp</span>
+                </button>
+                <button class="slm-option-btn slm-gmail" id="slm-gmail-btn">
+                    <span class="slm-opt-icon">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.910 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+                        </svg>
+                    </span>
+                    <span class="slm-opt-label">Gmail</span>
+                </button>
+                <button class="slm-option-btn slm-sms" id="slm-sms-btn">
+                    <span class="slm-opt-icon">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                        </svg>
+                    </span>
+                    <span class="slm-opt-label">SMS</span>
+                </button>
+                <button class="slm-option-btn slm-telegram" id="slm-telegram-btn">
+                    <span class="slm-opt-icon">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                        </svg>
+                    </span>
+                    <span class="slm-opt-label">Telegram</span>
+                </button>
+            </div>
+            <!-- Link copy row -->
+            <div class="slm-copy-row">
+                <input type="text" id="slm-link-input" class="slm-link-input" readonly>
+                <button class="slm-copy-btn" id="slm-copy-btn">📋 Copy</button>
+            </div>
+            <!-- Native share (shown only when browser supports it) -->
+            <button class="slm-native-share-btn hidden" id="slm-native-btn">
+                ⬆ Share via…
+            </button>
+        </div>
+    </div>
+
+    <!-- ====== Delivery Location Picker Modal ====== -->
+    <div id="location-modal" class="modal-overlay hidden">
+        <div class="modal-box location-modal-box">
+            <h3>📍 Set Delivery Location</h3>
+            <p style="opacity:0.6;font-size:13px;margin-bottom:16px;">Click anywhere on the Pakistan map to pin the delivery location</p>
+            <div id="location-map" class="location-map-container"></div>
+            <div id="location-selected" class="location-selected-readout">No location selected yet</div>
+            <input type="hidden" id="location-delivery-id">
+            <div style="display:flex;gap:10px;margin-top:12px;">
+                <button class="admin-btn approve" id="location-confirm-btn">✓ Confirm Location</button>
+                <button class="admin-btn deny" id="location-cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== Notification Panel ====== -->
+    <div id="notif-panel" class="notif-panel hidden" onclick="if(event.target===this)closeNotifPanel()">
+        <div class="notif-panel-box">
+            <div class="notif-panel-header">
+                <div class="notif-panel-title">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="opacity:0.7">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                    </svg>
+                    Notifications
+                    <span id="notif-panel-count" class="notif-panel-count"></span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button id="notif-dismiss-all-btn" class="notif-dismiss-all-btn" onclick="dismissAllNotifications()">Clear All</button>
+                    <button class="notif-close-btn" onclick="closeNotifPanel()">✕</button>
+                </div>
+            </div>
+            <div id="notif-list" class="notif-list">
+                <div class="notif-empty">No notifications</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js?v=13"></script>
+    <script src="celebration.js?v=1"></script>
+    <script src="features.js?v=20"></script>
+
+    <!-- 3D Sphere Background Module -->
+    <script type="module">
+        import Spheres2Background from 'https://cdn.jsdelivr.net/npm/threejs-components@0.0.8/build/backgrounds/spheres2.cdn.min.js';
+        
+        function initSpheres() {
+            const container = document.getElementById('webgl-canvas');
+            if (!container) return;
+
+            // Ensure container has explicit dimensions so Three.js renderer doesn't bail out
+            container.style.width = '100vw';
+            container.style.height = '100vh';
+
+            try {
+                const bg = Spheres2Background(container, {
+                    count: 150,
+                    colors: [0x00e6c3, 0x0d9488, 0x38bdf8, 0xffffff],
+                    minSize: 0.4,
+                    maxSize: 0.9
+                });
+                window.sphereBg = bg;
+                console.log('[SphereBG] Initialized successfully');
+            } catch(e) {
+                console.warn('[SphereBG] Init error:', e);
+            }
+        }
+
+        // Init after page fully loaded
+        if (document.readyState === 'complete') {
+            initSpheres();
+        } else {
+            window.addEventListener('load', initSpheres);
+        }
+    </script>
+    <script src="enhancements.js?v=1"></script>
+    <script src="viz-enhancements.js?v=1"></script>
+</body>
+</html>

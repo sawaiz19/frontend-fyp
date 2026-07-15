@@ -1,0 +1,68 @@
+{
+  "name": "chemtech-desktop",
+  "version": "1.0.0",
+  "description": "ChemTech desktop shell (Electron). Bundles the Flask + web UI; requires internet for Groq, Turso, and CDNs.",
+  "main": "electron/main.js",
+  "author": "ChemTech",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "electron": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis",
+    "dist:portable": "npm run dist:backend && electron-builder --win portable --x64",
+    "dist:backend": "pyinstaller chemtech-backend.spec --noconfirm",
+    "dist:all": "npm run dist:backend && npm run dist"
+  },
+  "devDependencies": {
+    "electron": "^32.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.chemtech.desktop",
+    "productName": "ChemTech",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": ".",
+        "to": "chemtech-bundle",
+        "filter": [
+          "**/*",
+          "!**/node_modules/**",
+          "!**/release/**",
+          "!**/.git/**",
+          "!**/__pycache__/**",
+          "!**/*.pyc",
+          "!**/electron/**",
+          "!**/package-lock.json"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ChemTech"
+    },
+    "portable": {
+      "artifactName": "ChemTech-Portable.exe"
+    }
+  }
+}

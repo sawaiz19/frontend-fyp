@@ -1,0 +1,438 @@
+/* ============================================================
+   ChemTech — enhancements.css
+   Features: 1 (CountUp), 3 (Skeleton), 4 (Stagger), 6 (HeatMap),
+             7 (Chart Toggle), 12 (Title Reveal), 15 (Role Badge)
+   ============================================================ */
+
+/* ========== FEATURE 3 — SKELETON LOADING ========== */
+@keyframes sk-shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+}
+
+.sk-base {
+    background: linear-gradient(90deg,
+        rgba(0,230,195,0.04) 25%,
+        rgba(0,230,195,0.10) 50%,
+        rgba(0,230,195,0.04) 75%);
+    background-size: 800px 100%;
+    animation: sk-shimmer 1.6s infinite linear;
+    border-radius: 8px;
+}
+
+.sk-container {
+    display: contents;
+}
+
+/* Chem card skeleton */
+.sk-card {
+    background: linear-gradient(145deg, rgba(6,14,26,.9), rgba(4,10,20,.95));
+    border: 1px solid rgba(0,230,195,0.06);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sk-line {
+    height: 12px;
+    border-radius: 6px;
+    width: 80%;
+}
+.sk-line.sk-title  { width: 65%; height: 16px; }
+.sk-line.sk-sub    { width: 45%; height: 10px; }
+.sk-line.sk-btn    { width: 100%; height: 38px; border-radius: 10px; margin-top: 6px; }
+
+.sk-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.sk-block {
+    height: 52px;
+    border-radius: 8px;
+}
+
+/* Delivery card skeleton */
+.sk-delivery-card {
+    background: linear-gradient(145deg, rgba(6,14,26,.9), rgba(4,10,20,.95));
+    border: 1px solid rgba(0,230,195,0.06);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sk-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.sk-badge {
+    width: 80px;
+    height: 26px;
+    border-radius: 20px;
+}
+
+.sk-progress-bar {
+    height: 14px;
+    border-radius: 7px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+/* Dashboard card skeleton */
+.sk-dash-card {
+    background: linear-gradient(145deg, rgba(6,14,26,.9), rgba(4,10,20,.95));
+    border: 1px solid rgba(0,230,195,0.06);
+    border-radius: 16px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sk-line.sk-big-num { width: 55%; height: 32px; }
+
+/* Apply shimmer to all sk-* elements */
+.sk-line, .sk-block, .sk-badge, .sk-progress-bar, .sk-big-num {
+    background: linear-gradient(90deg,
+        rgba(0,230,195,0.04) 25%,
+        rgba(0,230,195,0.10) 50%,
+        rgba(0,230,195,0.04) 75%);
+    background-size: 800px 100%;
+    animation: sk-shimmer 1.6s infinite linear;
+    border-radius: 8px;
+}
+
+/* ========== FEATURE 4 — STAGGER ANIMATIONS ========== */
+/* (JS handles inline styles; no extra CSS needed beyond transitions) */
+
+/* ========== FEATURE 6 — PROVINCE HEAT MAP ========== */
+.prov-heatmap-wrap {
+    position: relative;
+    background: rgba(4,10,22,0.6);
+    border: 1px solid rgba(0,230,195,0.10);
+    border-radius: 16px;
+    padding: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.prov-heatmap-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+}
+
+#prov-heatmap {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+    filter: drop-shadow(0 0 18px rgba(0,230,195,0.12));
+}
+
+.hmap-prov {
+    cursor: pointer;
+    transition: fill 0.3s ease, filter 0.3s ease;
+}
+.hmap-prov:hover {
+    filter: brightness(1.5) drop-shadow(0 0 8px rgba(0,230,195,0.5));
+}
+
+.hmap-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px;
+    font-weight: 600;
+    fill: rgba(240,248,255,0.90);
+    letter-spacing: 0.5px;
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+.hmap-sublabel {
+    font-family: 'DM Mono', monospace;
+    font-size: 7px;
+    fill: rgba(0,230,195,0.75);
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+#hmap-tooltip {
+    position: absolute;
+    background: rgba(6,14,26,0.97);
+    border: 1px solid rgba(0,230,195,0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--ink);
+    pointer-events: none;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 500;
+    line-height: 1.6;
+}
+
+#hmap-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ========== FEATURE 7 — CHART TYPE TOGGLE ========== */
+.chart-type-toggle {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.ctt-btn {
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,230,195,0.15);
+    background: transparent;
+    color: var(--ink-dim);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ctt-btn:hover {
+    border-color: rgba(0,230,195,0.35);
+    color: var(--ink);
+}
+
+.ctt-btn.active {
+    background: rgba(0,230,195,0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* ========== FEATURE 12 — TITLE SPLIT-TEXT REVEAL ========== */
+@keyframes char-reveal {
+    0%   { opacity: 0; transform: translateY(14px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.title-char {
+    display: inline-block;
+    opacity: 0;
+    animation: char-reveal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
+}
+
+/* ========== FEATURE 15 — ROLE BADGE GLOW ========== */
+@keyframes role-entrance {
+    0%   { opacity: 0; transform: translateY(-8px) scale(0.9); }
+    60%  { transform: translateY(2px) scale(1.03); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes role-glow-pulse {
+    0%, 100% { box-shadow: 0 0 8px currentColor; }
+    50%       { box-shadow: 0 0 22px currentColor, 0 0 40px currentColor; }
+}
+
+.role-reveal {
+    animation: role-entrance 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
+}
+
+.role-active-glow {
+    animation: role-glow-pulse 1.2s ease-in-out 3;
+}
+
+/* ============================================================
+   Premium Wow Feature I: Sliding Tab Underline
+   ============================================================ */
+.tab-slider-pill {
+    position: absolute;
+    background: rgba(0, 230, 195, 0.15);
+    border: 1px solid var(--accent);
+    border-radius: 20px;
+    z-index: 0;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: none;
+    box-shadow: 0 0 15px rgba(0, 230, 195, 0.2);
+}
+
+.province-tabs .prov-tab {
+    position: relative;
+    z-index: 1;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* ============================================================
+   Premium Wow Feature K: Orbiting Header Border
+   ============================================================ */
+@property --orbit-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@keyframes orbit-spin {
+    to { --orbit-angle: 360deg; }
+}
+
+.fp-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px; /* border thickness */
+    background: conic-gradient(
+        from var(--orbit-angle) at 50% 50%,
+        transparent 0%,
+        transparent 70%,
+        var(--accent) 90%,
+        transparent 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    animation: orbit-spin 4s linear infinite;
+    opacity: 0.8;
+}
+
+/* ============================================================
+   Premium Wow Feature L: Button Hover Ripple + Glow
+   ============================================================ */
+.fp-back-btn, .admin-btn, .nav-btn, .prov-tab {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Create the ripple glow base */
+.fp-back-btn::after, .admin-btn::after, .prov-tab::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(0,230,195,0.4) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    transition: width 0.4s ease-out, height 0.4s ease-out, opacity 0.4s ease-out;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Ensure text stays above the ripple */
+.fp-back-btn span, .admin-btn span, .prov-tab span {
+    position: relative;
+    z-index: 1;
+}
+
+/* Hover expansion */
+.fp-back-btn:hover::after, .admin-btn:hover::after, .prov-tab:hover::after {
+    width: 250px;
+    height: 250px;
+    opacity: 1;
+}
+
+/* Extra pop on hover */
+.fp-back-btn:hover, .admin-btn:hover, .prov-tab:hover {
+    box-shadow: 0 0 15px rgba(0, 230, 195, 0.25), inset 0 0 10px rgba(0, 230, 195, 0.1);
+    transform: translateY(-1px);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* ============================================================
+   Animation Transition Overlay
+   Covers the black-frame flash when a WebGL animation starts/ends
+   ============================================================ */
+#anim-transition-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 800;
+    pointer-events: none;
+    opacity: 0;
+    background:
+        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0, 230, 195, 0.06) 0%, transparent 70%),
+        rgba(2, 8, 18, 0.96);
+    transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#anim-transition-overlay.active {
+    opacity: 1;
+    transition: opacity 0.2s ease-out; /* fast in, slow out via removing class */
+}
+
+/* ============================================================
+   Skip Animation Button
+   ============================================================ */
+#skip-anim-btn {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    background: rgba(0, 230, 195, 0.08);
+    border: 1px solid rgba(0, 230, 195, 0.35);
+    border-radius: 40px;
+    color: rgba(0, 230, 195, 0.9);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    /* Hidden by default */
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                background 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+#skip-anim-btn.skip-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+#skip-anim-btn:hover {
+    background: rgba(0, 230, 195, 0.18);
+    border-color: rgba(0, 230, 195, 0.7);
+    box-shadow:
+        0 0 24px rgba(0, 230, 195, 0.25),
+        inset 0 0 12px rgba(0, 230, 195, 0.08);
+    transform: translateY(-2px) scale(1.03);
+}
+
+#skip-anim-btn:active {
+    transform: scale(0.97);
+    background: rgba(0, 230, 195, 0.25);
+}
+
+#skip-anim-btn span {
+    font-size: 14px;
+    line-height: 1;
+    transition: transform 0.2s;
+}
+
+#skip-anim-btn:hover span {
+    transform: translateX(3px);
+}

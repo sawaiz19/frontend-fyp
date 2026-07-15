@@ -1,0 +1,3 @@
+# Disable Jekyll processing — serve all files as-is
+# This prevents GitHub Pages from ignoring files starting with _ and
+# from trying to process Python/JS files as Liquid templates.

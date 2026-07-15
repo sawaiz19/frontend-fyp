@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChemTech AI Modules — Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0d14;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .slide {
+      width: 100%;
+      max-width: 1100px;
+      background: linear-gradient(135deg, #0f1624 0%, #111827 100%);
+      border: 1px solid rgba(99,179,237,0.15);
+      border-radius: 20px;
+      padding: 36px 42px 32px;
+      box-shadow: 0 0 60px rgba(56,189,248,0.07);
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      padding-bottom: 18px;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #e2e8f0, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    /* Grid */
+    .modules {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 18px 16px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 14px 14px 0 0;
+    }
+    .card.blue::before   { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+    .card.green::before  { background: linear-gradient(90deg, #34d399, #059669); }
+    .card.violet::before { background: linear-gradient(90deg, #a78bfa, #ec4899); }
+
+    .card-icon  { font-size: 22px; margin-bottom: 8px; }
+    .card-title { font-size: 13px; font-weight: 700; letter-spacing: 0.03em; margin-bottom: 4px; }
+    .card.blue   .card-title { color: #7dd3fc; }
+    .card.green  .card-title { color: #6ee7b7; }
+    .card.violet .card-title { color: #c4b5fd; }
+
+    .card-desc {
+      font-size: 11px;
+      color: #64748b;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    /* Code block */
+    .code-block {
+      background: #070a12;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      line-height: 1.65;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .kw  { color: #818cf8; }
+    .fn  { color: #38bdf8; }
+    .st  { color: #86efac; }
+    .cm  { color: #475569; font-style: italic; }
+    .nb  { color: #f59e0b; }
+    .op  { color: #94a3b8; }
+    .var { color: #e2e8f0; }
+    .ret { color: #fb923c; }
+
+    /* Footer */
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      font-size: 10px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .badge.groq   { color: #38bdf8; border-color: rgba(56,189,248,0.3);  background: rgba(56,189,248,0.07); }
+    .badge.ollama { color: #6ee7b7; border-color: rgba(110,231,183,0.3); background: rgba(110,231,183,0.07); }
+    .badge.local  { color: #c4b5fd; border-color: rgba(196,181,253,0.3); background: rgba(196,181,253,0.07); }
+    .footer-note  { font-size: 10px; color: #334155; }
+  </style>
+</head>
+<body>
+<div class="slide">
+
+  <div class="header">
+    <div class="logo-badge">&#9878; ChemTech</div>
+    <div>
+      <h1>AI Modules &mdash; Code Snapshots</h1>
+      <p>Three core AI features powering ChemTech Pakistan&rsquo;s intelligent operations platform</p>
+    </div>
+  </div>
+
+  <div class="modules">
+
+    <!-- Card 1: LLM Router -->
+    <div class="card blue">
+      <div class="card-icon">&#129302;</div>
+      <div class="card-title">&#9312; LLM Router &amp; Fallback</div>
+      <div class="card-desc">Prefers Groq cloud; auto-falls back to local Ollama on rate-limit or error.</div>
+      <div class="code-block"><span class="kw">def</span> <span class="fn">llm_complete</span><span class="op">(</span><span class="var">messages</span><span class="op">,</span>
+               <span class="var">preference</span><span class="op">=</span><span class="st">'groq'</span><span class="op">):</span>
+  <span class="kw">if</span> <span class="var">preference</span> <span class="op">==</span> <span class="st">'local'</span><span class="op">:</span>
+    <span class="ret">return</span> <span class="fn">ollama_call</span><span class="op">(</span><span class="var">messages</span><span class="op">)</span>
+  <span class="kw">try</span><span class="op">:</span>
+    <span class="cm"># Try Groq (cloud) first</span>
+    <span class="ret">return</span> <span class="fn">groq_call</span><span class="op">(</span><span class="var">messages</span><span class="op">)</span>
+  <span class="kw">except</span> <span class="var">Exception</span> <span class="kw">as</span> <span class="var">e</span><span class="op">:</span>
+    <span class="cm"># Auto-fallback on rate-limit</span>
+    <span class="kw">if</span> <span class="fn">_is_groq_retryable_error</span><span class="op">(</span><span class="var">e</span><span class="op">):</span>
+      <span class="ret">return</span> <span class="fn">ollama_call</span><span class="op">(</span><span class="var">messages</span><span class="op">)</span>
+    <span class="kw">raise</span></div>
+    </div>
+
+    <!-- Card 2: AI Sentiment -->
+    <div class="card green">
+      <div class="card-icon">&#128172;</div>
+      <div class="card-title">&#9313; AI Sentiment Analysis</div>
+      <div class="card-desc">LLM scores delivery feedback 0&ndash;1; rule-based engine catches hallucinated justifications.</div>
+      <div class="code-block"><span class="cm"># Prompt sent to Groq / Ollama</span>
+<span class="var">prompt</span> <span class="op">=</span> <span class="st">f"""Classify sentiment:
+FEEDBACK: "{text_feedback}"
+0.0 = Very Negative
+1.0 = Very Positive
+JSON only:
+{{"score":&lt;float&gt;,
+  "label":"Pos|Neu|Neg",
+  "justification":"…"}}"""</span>
+
+<span class="cm"># Reject hallucinated justifications</span>
+<span class="kw">if</span> <span class="fn">_justification_ungrounded</span><span class="op">(</span>
+    <span class="var">feedback</span><span class="op">,</span> <span class="var">justification</span><span class="op">):</span>
+  <span class="ret">return</span> <span class="fn">_rule_based_sentiment</span><span class="op">(</span><span class="var">feedback</span><span class="op">)</span></div>
+    </div>
+
+    <!-- Card 3: Context-Aware Chat -->
+    <div class="card violet">
+      <div class="card-icon">&#129504;</div>
+      <div class="card-title">&#9314; Context-Aware Chat Assistant</div>
+      <div class="card-desc">Injects live DB snapshot &amp; pre-computed ground-truth so the LLM cites real figures.</div>
+      <div class="code-block"><span class="cm"># 1 — Classify query intent</span>
+<span class="var">flags</span> <span class="op">=</span> <span class="fn">_analytics_query_flags</span><span class="op">(</span><span class="var">question</span><span class="op">)</span>
+
+<span class="cm"># 2 — Pull authoritative SQL answers</span>
+<span class="var">truth</span> <span class="op">=</span> <span class="fn">build_ground_truth_block</span><span class="op">(</span>
+    <span class="var">question</span><span class="op">,</span> <span class="var">metrics</span><span class="op">)</span>
+
+<span class="cm"># 3 — Build role-aware system prompt</span>
+<span class="var">system</span> <span class="op">=</span> <span class="fn">build_chat_system_prompt</span><span class="op">(</span>
+    <span class="var">db_context</span><span class="op">,</span> <span class="var">user_context</span><span class="op">)</span>
+
+<span class="cm"># 4 — Route to LLM</span>
+<span class="var">out</span> <span class="op">=</span> <span class="fn">llm_complete</span><span class="op">(</span>
+    <span class="op">[</span><span class="var">system</span><span class="op">,</span> <span class="var">user_msg</span><span class="op">],</span>
+    <span class="var">temperature</span><span class="op">=</span><span class="nb">0.3</span><span class="op">)</span></div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div class="badges">
+      <span class="badge groq">Groq (Cloud)</span>
+      <span class="badge ollama">Ollama (Local)</span>
+      <span class="badge local">Rule-Based Fallback</span>
+    </div>
+    <div class="footer-note">chatbot.py &middot; ChemTech FYP 2026</div>
+  </div>
+
+</div>
+</body>
+</html>
